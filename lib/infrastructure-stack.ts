@@ -61,7 +61,7 @@ export class InfrastructureStack extends cdk.Stack {
     // Deploy the Local Website to S3
     const deployment = new s3Deployment.BucketDeployment(this,
     "deployStaticWebsite", {
-      sources: [s3Deployment.Source.asset("../website/build")],
+      sources: [s3Deployment.Source.asset("../website/build"),s3Deployment.Source.asset("../website/assets")],
       destinationBucket: myBucket,
       distribution: distribution
     });
