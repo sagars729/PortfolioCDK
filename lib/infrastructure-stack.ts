@@ -26,14 +26,12 @@ export class InfrastructureStack extends cdk.Stack {
     // Create a new certificate for domain name
     const cert = new acm.Certificate(this, 'Certificate', {
         domainName: 'www.sagardsaxena.com',
-        validation: acm.CertificateValidation.fromDns(zone)
+        subjectAlternativeNames: ['sagardsaxena.com'],
+        validation: acm.CertificateValidation.fromDnsMultiZone({
+			'www.sagardsaxena.com': zone,
+			'sagardsaxena.com': zone
+		})
     });
-
-    // Create a new certificate for second domain name
-    // const cert2 = new acm.Certificate(this, 'Certificate2', {
-    //     domainName: 'sagardsaxena.com',
-    //     validation: acm.CertificateValidation.fromDns(zone)
-    // });
 
     // Create a CloudFront Distribution
     const distribution = new cloudfront.CloudFrontWebDistribution(
@@ -41,7 +39,7 @@ export class InfrastructureStack extends cdk.Stack {
       "Distribution",
       {
         viewerCertificate: {
-          aliases: ["www.sagardsaxena.com"],
+          aliases: ["www.sagardsaxena.com", "sagardsaxena.com"],
           props: {
             acmCertificateArn: cert.certificateArn,
             sslSupportMethod: "sni-only",
@@ -66,10 +64,10 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Register the blank subdomain
-    // const aRec = new route53.ARecord(this, 'test.baseZone2', {
-    //     zone: zone,
-    //     target: new route53.RecordTarget(distribution.domainName)
-    // });
+    const aRec = new route53.ARecord(this, 'test.baseZone2', {
+        zone: zone,
+        target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution))
+    });
 
     // Deploy the Local Website to S3
     const deployment = new s3Deployment.BucketDeployment(this,
