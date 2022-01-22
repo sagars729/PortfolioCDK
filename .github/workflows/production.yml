@@ -1,0 +1,56 @@
+## This is a basic workflow to help you get started with Actions
+
+name: UpdateProdPipeline
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ dev ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Check out and update pipeline repository
+        uses: actions/checkout@master
+        with:
+          submodules: recursive
+          repository: sagars729/PortfolioPipeline
+          ref: main
+          token: ${{ secrets.PIPELINE_TOKEN }}
+
+      # Configure git
+      - name: Configure Git
+        working-directory: infrastructure
+        run: |
+          git config --global user.email "sagardsaxena@gmail.com"
+          git config --global user.name "Sagar Saxena"
+          git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+          git fetch
+
+      # Pull website changes
+      - name: Pull Infrastructure Changes
+        working-directory: infrastructure
+        run: |
+          git checkout main
+          git pull origin main
+     
+      # Update website
+      - name: Update Infrastructure
+        run: |
+          git add infrastructure
+          currentDate=`date +"%Y-%m-%d %T"`
+          git commit -m "Infrastructure Updated by GitHub Actions $currentDate"
+          git push -u origin main
+          
