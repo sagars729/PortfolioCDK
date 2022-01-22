@@ -28,7 +28,7 @@ jobs:
           submodules: recursive
           repository: sagars729/PortfolioPipeline
           ref: dev
-          token: ${{ secrets.PIPELINE_PAT }}
+          token: ${{ secrets.PIPELINE_TOKEN }}
 
       # Configure git
       - name: Configure Git
